@@ -25,4 +25,3 @@ db = mysql.connector.connect(
 #
 # # Close the cursor and database connection
 # cursor.close()
-db.close()
