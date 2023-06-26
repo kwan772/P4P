@@ -20,8 +20,8 @@ class Label():
         if "label" in self.id:
             return
 
-        selftext = re.findall(r'\w+', self.post[7])
-        title = re.findall(r'\w+', self.post[10])
+        selftext = self.post[7].lower().split(" ")
+        title = self.post[10].lower().split(" ")
 
         self.findMatches(selftext)
         self.findMatches(title)
@@ -53,9 +53,9 @@ class Label():
         if not self.labeled.__contains__(symbol):
             try:
                 cursor = self.db.cursor()
-                new_post = (self.post[0] + "_label" + str(self.count),) + self.post[1:-1] + (symbol.upper(),)
+                new_post = (self.post[0] + "_label" + str(self.count),) + self.post[1:-4] + (symbol.upper(),) + self.post[16:]
                 self.count += 1
-                query = "INSERT INTO reddit_posts (id, clicked, distinguished, edited, is_original_content, is_self, over_18, selftext, spoiler, stickied, title, upvote_ratio, created_utc, num_comments, score, symbol) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                query = "INSERT INTO reddit_posts (id, clicked, distinguished, edited, is_original_content, is_self, over_18, selftext, spoiler, stickied, title, upvote_ratio, created_utc, num_comments, score, symbol, author_id, sentiment_title_score, sentiment_body_score) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
                 cursor.execute(query, new_post)
                 cursor.close()
                 self.labeled.add(symbol)

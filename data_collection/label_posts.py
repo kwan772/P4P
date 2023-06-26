@@ -20,9 +20,9 @@ post_ids = set()
 for row in data:
     sb = "$" + row[0]
     symbols[sb] = row[0]
-    symbols[row[1]] = row[0]
+    # symbols[row[1]] = row[0]
 
-
+print(symbols)
 # cursor = db.cursor()
 # query = f"SELECT * FROM reddit_posts Limit {0},{1000}"
 # # for insertion in insertions:
@@ -44,7 +44,7 @@ stop_loop = False
 
 while not stop_loop:
     cursor = db.cursor()
-    query = f"SELECT * FROM reddit_posts where created_utc < '2022-11-03 19:31:57' and created_utc > '2021-11-24 23:30:20' Limit {number_of_processed_rows},{number_of_rows}"
+    query = f"SELECT * FROM reddit_posts Limit {number_of_processed_rows},{number_of_rows}"
     cursor.execute(query)
 
     d = cursor.fetchall()
@@ -81,8 +81,8 @@ while not stop_loop:
     #     thread.start()
     #     # print(post.title)
     #
-    # for thread in threads:
-    #     thread.join()
+    for thread in threads:
+        thread.join()
 
     print(f"Processed: {number_of_processed_rows} rows")
 db.close()
