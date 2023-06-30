@@ -30,6 +30,9 @@ reddit_df['date'] = pd.to_datetime(reddit_df['created_utc']).dt.date
 
 # Extract the date portion from 'Date' column in hist
 hist['date'] = hist['Date'].dt.date
+# Calculate the percentage change in closing price from the previous day
+hist['price_change_pct'] = hist['Close'].pct_change()
+
 
 # print(reddit_df)
 # print(hist)
@@ -55,10 +58,13 @@ newdf = merged_df.select_dtypes(include=numerics)
 df_interpolated = newdf.interpolate(method='linear')
 # Compute rolling window synchrony
 r_price_sentiment = df_interpolated['Close'].rolling(window=r_window_size, center=True).corr(df_interpolated['title_sentiment'])
+r_price_change_sentiment = df_interpolated['price_change_pct'].rolling(window=r_window_size, center=True).corr(df_interpolated['title_sentiment'])
 r_volume_sentiment = df_interpolated['Volume'].rolling(window=r_window_size, center=True).corr(df_interpolated['title_sentiment'])
 r_price_num_posts = df_interpolated['Close'].rolling(window=r_window_size, center=True).corr(df_interpolated['num_posts'])
+r_price_change_num_posts = df_interpolated['price_change_pct'].rolling(window=r_window_size, center=True).corr(df_interpolated['num_posts'])
 r_volume_num_posts = df_interpolated['Volume'].rolling(window=r_window_size, center=True).corr(df_interpolated['num_posts'])
 r_price_num_comments = df_interpolated['Close'].rolling(window=r_window_size, center=True).corr(df_interpolated['num_comments'])
+r_price_change_num_comments = df_interpolated['price_change_pct'].rolling(window=r_window_size, center=True).corr(df_interpolated['num_comments'])
 r_volume_num_comments = df_interpolated['Volume'].rolling(window=r_window_size, center=True).corr(df_interpolated['num_comments'])
 
 # Create the plot
@@ -77,9 +83,25 @@ plt.ylabel('Pearson r')
 plt.grid(True)
 plt.show()
 
+# Create the plot
+plt.figure(figsize=(15,2))
+plt.plot(merged_df['date'], r_price_change_sentiment)
+plt.title('Price Change & Sentiment Correlation')
+plt.xlabel('Date')
+plt.ylabel('Pearson r')
+plt.grid(True)
+
 plt.figure(figsize=(15,2))
 plt.plot(merged_df['date'], r_price_num_posts)
 plt.title('Price & Number of Posts Correlation')
+plt.xlabel('Date')
+plt.ylabel('Pearson r')
+plt.grid(True)
+plt.show()
+
+plt.figure(figsize=(15,2))
+plt.plot(merged_df['date'], r_price_change_num_posts)
+plt.title('Price Change & Number of Posts Correlation')
 plt.xlabel('Date')
 plt.ylabel('Pearson r')
 plt.grid(True)
@@ -94,8 +116,8 @@ plt.grid(True)
 plt.show()
 
 plt.figure(figsize=(15,2))
-plt.plot(merged_df['date'], r_price_num_comments)
-plt.title('Price & Number of Comments Correlation')
+plt.plot(merged_df['date'], r_price_change_num_comments)
+plt.title('Price Change & Number of Comments Correlation')
 plt.xlabel('Date')
 plt.ylabel('Pearson r')
 plt.grid(True)
