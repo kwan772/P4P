@@ -12,7 +12,8 @@ reddit_df = []
 
 with db_connection.connect() as conn:
     query = f"""
-             SELECT created_utc, avg(sentiment_body_score) body_sentiment, avg(sentiment_title_score) title_sentiment, count(id) num_posts, sum(num_comments) num_comments FROM p4p.reddit_posts where symbol = 'GME' group by date(created_utc) order by created_utc;
+    SELECT DATE(created_utc) as created_date, avg(sentiment_body_score) body_sentiment, avg(sentiment_title_score) title_sentiment, count(id) num_posts, sum(num_comments) num_comments FROM p4p.reddit_posts where symbol = 'GME' group by DATE(created_utc) order by created_date;
+
              """
     reddit_df = pd.read_sql(text(query), conn)
 
@@ -26,7 +27,7 @@ hist = ticker.history(start="2015-05-28", end="2023-03-24")
 # Reset the index of df2 to convert the DateTimeIndex to a column
 hist.reset_index(inplace=True)
 # Extract the date portion from 'created_utc' column in reddit_df
-reddit_df['date'] = pd.to_datetime(reddit_df['created_utc']).dt.date
+reddit_df['date'] = pd.to_datetime(reddit_df['created_date']).dt.date
 
 # Extract the date portion from 'Date' column in hist
 hist['date'] = hist['Date'].dt.date

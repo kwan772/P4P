@@ -3,7 +3,7 @@ from data_collection.db_connection import db
 
 
 cursor = db.cursor()
-query = f"""select sum(num_comments) c, author_id from reddit_posts group by author_id order by c desc;"""
+query = f"""select sum(num_comments) c, author_id from reddit_posts where author_id != 'None' and author_id is not null group by author_id order by c desc;"""
 cursor.execute(query)
 result = cursor.fetchall()
 columns = []
@@ -25,6 +25,7 @@ print(values)
 
 # converting string values to float
 values = [int(x) for x in values]
+
 
 # create bar graph
 plt.bar(columns, values)
