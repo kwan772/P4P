@@ -15,13 +15,17 @@ class Label():
         self.id = self.post[0]
         self.count = 0
         self.labeled = set()
+        self.keys = self.symbols.keys()
+        self.keys = sorted(self.keys, key=lambda s: -len(s))
 
     def run(self):
-        if "label" in self.id:
-            return
-
-        selftext = self.post[7].lower().split(" ")
+        # if "label" in self.id:
+        #     return
+        selftext = self.post[7].lower()
         title = self.post[10].lower().split(" ")
+        #
+        # print(selftext)
+        # print(title)
 
         self.findMatches(selftext)
         self.findMatches(title)
@@ -31,13 +35,13 @@ class Label():
 
 
     def findMatches(self, words):
-        for word in words:
-            if word in self.symbols:
-                if not self.is_labeled:
-                    self.labelPost(self.symbols[word])
-                    self.is_labeled = True
-                else:
-                    self.insertPostLabel(self.symbols[word])
+        for key in self.keys:
+            if key in words:
+                self.labelPost(self.symbols[key])
+                break
+            # self.is_labeled = True
+                # else:
+                #     self.insertPostLabel(self.symbols[word])
 
     def labelPost(self, symbol):
         cursor = self.db.cursor()
@@ -47,19 +51,19 @@ class Label():
         self.db.commit()
         cursor.close()
         self.labeled.add(symbol)
-        print("labeled " + self.id + " with " + symbol)
+        print("labeled " + str(self.id) + " with " + symbol)
 
-    def insertPostLabel(self, symbol):
-        if not self.labeled.__contains__(symbol):
-            try:
-                cursor = self.db.cursor()
-                new_post = (self.post[0] + "_label" + str(self.count),) + self.post[1:-4] + (symbol.upper(),) + self.post[16:]
-                self.count += 1
-                query = "INSERT INTO reddit_posts (id, clicked, distinguished, edited, is_original_content, is_self, over_18, selftext, spoiler, stickied, title, upvote_ratio, created_utc, num_comments, score, symbol, author_id, sentiment_title_score, sentiment_body_score) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-                cursor.execute(query, new_post)
-                cursor.close()
-                self.labeled.add(symbol)
-                print("inserted " + self.id + " with " + symbol + " count = " + str(self.count))
-            except Exception as e:
-                print(e)
+    # def insertPostLabel(self, symbol):
+    #     if not self.labeled.__contains__(symbol):
+    #         try:
+    #             cursor = self.db.cursor()
+    #             new_post = (self.post[0] + "_label" + str(self.count),) + self.post[1:-4] + (symbol.upper(),) + self.post[16:]
+    #             self.count += 1
+    #             query = "INSERT INTO reddit_posts (id, clicked, distinguished, edited, is_original_content, is_self, over_18, selftext, spoiler, stickied, title, upvote_ratio, created_utc, num_comments, score, symbol, author_id, sentiment_title_score, sentiment_body_score) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+    #             cursor.execute(query, new_post)
+    #             cursor.close()
+    #             self.labeled.add(symbol)
+    #             print("inserted " + self.id + " with " + symbol + " count = " + str(self.count))
+    #         except Exception as e:
+    #             print(e)
 
