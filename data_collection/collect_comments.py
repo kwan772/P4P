@@ -15,35 +15,38 @@ reddit = praw.Reddit(client_id='QkUsWUsdKxz5ZW0Cw_JmlQ', client_secret='dgPACtoD
 # comments = post.comments.list()
 # print(post.author)
 # data = []
-cursor = db.cursor()
-query = "select author_id, sum(num_comments) as snc from reddit_posts where author_id is not null and not author_id = 'None' group by author_id order by snc desc limit 100"
-# for insertion in insertions:
-#     if insertion[0] == 'ei1foq':
-#         print("@@@@@@@@@@@@@@@")
-cursor.execute(query)
-data = cursor.fetchall()
-db.commit()
+symbol = "gme"
+# cursor = db.cursor()
+# query = "select author_id, sum(num_comments) as snc from reddit_posts where author_id is not null and not author_id = 'None' group by author_id order by snc desc limit 100"
+# # for insertion in insertions:
+# #     if insertion[0] == 'ei1foq':
+# #         print("@@@@@@@@@@@@@@@")
+# cursor.execute(query)
+# data = cursor.fetchall()
+# db.commit()
+#
+# data = [d[0] for d in data]
+# print(data)
 
-data = [d[0] for d in data]
-print(data)
-
 cursor = db.cursor()
-query = f"select id, author_id, symbol from reddit_posts where author_id in ({','.join(['%s'] * len(data))})"
+query = f"""
+select id, author_id, symbol from reddit_posts where title like "%gme%" or title like "%gamestop%"
+"""
 # for insertion in insertions:
 #     if insertion[0] == 'ei1foq':
 #         print("@@@@@@@@@@@@@@@")
 print(query)
-cursor.execute(query,data)
+cursor.execute(query)
 result = cursor.fetchall()
 db.commit()
 print(len(result))
 
 def bulk_insert_data(data):
-    keys = ['edited', 'body', 'created_utc', 'author_id', 'id', 'link_id', 'parent_id', 'parent_symbol', 'parent_author_id']
+    keys = ['edited', 'body', 'created_utc', 'author_id', 'id', 'link_id', 'parent_id', 'parent_symbol', 'parent_author_id', 'symbol']
 
     if data:
         cursor = db.cursor()
-        query = "INSERT INTO wsb_comments ({}) VALUES ({})".format(
+        query = "INSERT INTO comments_for_certain_symbols ({}) VALUES ({})".format(
             ', '.join(keys),
             ', '.join(['%s'] * len(data[0]))
         )
@@ -65,9 +68,9 @@ def get_comments(res):
     for comment in post.comments:
         data.append(
             [1 if comment.edited else 0, comment.body, comment.created_utc, comment.author.name, comment.id, comment.link_id,
-             res[0], res[2], res[1]])
+             res[0], symbol.upper(), res[1], symbol.upper()])
 
-while i <= len(result):
+while i < len(result):
     with concurrent.futures.ThreadPoolExecutor() as executor:
         futures = []
         for x in range(50):
