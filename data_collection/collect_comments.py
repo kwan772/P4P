@@ -15,7 +15,7 @@ reddit = praw.Reddit(client_id='QkUsWUsdKxz5ZW0Cw_JmlQ', client_secret='dgPACtoD
 # comments = post.comments.list()
 # print(post.author)
 # data = []
-symbol = "gme"
+symbol = "daily_discussion"
 # cursor = db.cursor()
 # query = "select author_id, sum(num_comments) as snc from reddit_posts where author_id is not null and not author_id = 'None' group by author_id order by snc desc limit 100"
 # # for insertion in insertions:
@@ -30,7 +30,7 @@ symbol = "gme"
 
 cursor = db.cursor()
 query = f"""
-select id, author_id, symbol from reddit_posts where title like "%gme%" or title like "%gamestop%"
+select id, author_id, symbol from reddit_posts where title like "%daily discussion%"
 """
 # for insertion in insertions:
 #     if insertion[0] == 'ei1foq':
