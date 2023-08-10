@@ -1,20 +1,30 @@
+import community as community_louvain
 import random
-
 import networkx as nx
 import matplotlib.pyplot as plt
 from data_collection.db_connection import db
+import matplotlib.cm as cm
 
 G = nx.Graph()
 
 cursor = db.cursor()
+# query = f"""
+# SELECT parent_author_id, author_id
+# FROM comments_for_certain_symbols
+# WHERE symbol = "tsla"
+#   AND parent_author_id != "None"
+#   AND author_id != "None"
+# ORDER BY RAND()
+# limit 10000;
+# """
+
 query = f"""
 SELECT parent_author_id, author_id 
-FROM comments_for_certain_symbols 
-WHERE symbol = "tsla" 
-  AND parent_author_id != "None" 
+FROM wsb_comments
+WHERE parent_author_id != "None" 
   AND author_id != "None"
 ORDER BY RAND()
-limit 1000;
+limit 5000;
 """
 # query = f"""select parent_author_id, author_id from wsb_comments where parent_author_id in (select t1.author_id from (select author_id, sum(num_comments) snc from reddit_posts where author_id is not null and author_id != 'None' group by author_id order by snc desc limit 10) t1)"""
 # query = f"""CREATE TEMPORARY TABLE IF NOT EXISTS top_authors AS (
@@ -50,20 +60,14 @@ print(len(result))
 for edge in result:
     G.add_edge(edge[0], edge[1])
 
-# Node sizes based on degree
-sizes = [G.degree(node) * 1.01 for node in G.nodes()]
-node_colors = ['black' if random.random() > 0.5 else '#045993' for node in G.nodes()]
+# compute the best partition
+partition = community_louvain.best_partition(G)
 
-pos = nx.fruchterman_reingold_layout(G)
-
-nx.draw_networkx_edges(G, pos, alpha=0.2, edge_color='gray')
-# nx.draw_networkx_nodes(G, pos, node_size=sizes, node_color='lightblue')
-# nx.draw_networkx_nodes(G, pos, node_size=sizes, node_color='#045993')
-nx.draw_networkx_nodes(G, pos, node_size=1, node_color="#045993")
-
-labels = {node: node for node in G.nodes() if G.degree(node) > 500}
-# nx.draw_networkx_labels(G, pos, labels=labels, font_size=9, font_weight=700, font_color='black')
-nx.draw_networkx_labels(G, pos, labels=labels, font_size=9, font_weight=700, font_color='#ff7c0c')
-
-plt.savefig('graph.png')  # Save the graph to a file
+# draw the graph
+pos = nx.spring_layout(G)
+# color the nodes according to their partition
+cmap = cm.get_cmap('viridis', max(partition.values()) + 1)
+nx.draw_networkx_nodes(G, pos, partition.keys(), node_size=40,
+                       cmap=cmap, node_color=list(partition.values()))
+nx.draw_networkx_edges(G, pos, alpha=0.5)
 plt.show()
