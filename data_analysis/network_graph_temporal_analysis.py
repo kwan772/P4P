@@ -11,7 +11,7 @@ from data_collection.db_connection import db
 query = f"""
 SELECT parent_author_id, author_id, FROM_UNIXTIME(created_utc) as time 
 FROM comments_for_certain_symbols 
-WHERE symbol = "tsla" 
+WHERE symbol = "gme" 
   AND parent_author_id != "None" 
   AND author_id != "None"
 having time < "2023-01-01"

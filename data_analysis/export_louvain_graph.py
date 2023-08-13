@@ -20,9 +20,10 @@ cursor = db.cursor()
 
 query = f"""
 SELECT parent_author_id, author_id 
-FROM wsb_comments
+FROM comments_for_certain_symbols
 WHERE parent_author_id != "None" 
   AND author_id != "None"
+  AND symbol = "tsla"
 ORDER BY RAND()
 """
 # query = f"""select parent_author_id, author_id from wsb_comments where parent_author_id in (select t1.author_id from (select author_id, sum(num_comments) snc from reddit_posts where author_id is not null and author_id != 'None' group by author_id order by snc desc limit 10) t1)"""
@@ -66,4 +67,4 @@ partition = community_louvain.best_partition(G)
 for node, community_id in partition.items():
     G.nodes[node]['community'] = community_id
 
-nx.write_gexf(G, 'louvain_graph_with_communities.gexf')
+nx.write_gexf(G, 'louvain_graph_TSLA.gexf')
