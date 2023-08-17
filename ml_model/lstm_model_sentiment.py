@@ -22,7 +22,7 @@ SELECT
 COUNT(*) AS total_comments,
 (SUM(CASE WHEN sentiment = 'positive' THEN 1 ELSE 0 END) * 1.0) AS positive_sentiment_ratio,
 (SUM(CASE WHEN sentiment = 'negative' THEN 1 ELSE 0 END) * 1.0) AS negative_sentiment_ratio,
-date(from_unixtime(created_utc)) d FROM p4p.comments_for_certain_symbols where symbol = "tsla" group by date(from_unixtime(created_utc));
+date(from_unixtime(created_utc)) d FROM p4p.comments_for_certain_symbols where symbol = "gme" group by date(from_unixtime(created_utc));
 """
 
 sentiment_df = None
@@ -39,7 +39,7 @@ sentiment_df = sentiment_df.sort_index()[start_date:end_date]
 
 # print(sentiment_df)
 
-tesla = "TSLA"
+tesla = "GME"
 
 # Fetch data
 df = yf.download(tesla, start=start_date, end=end_date)
@@ -92,7 +92,7 @@ log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 tensorboard_callback = TensorBoard(log_dir=log_dir, histogram_freq=1)
 
 # Train the model
-model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_val, y_val), callbacks=[tensorboard_callback])
+model.fit(X_train, y_train, epochs=100, batch_size=32, validation_data=(X_val, y_val), callbacks=[tensorboard_callback])
 
 # Make predictions
 predicted_prices = model.predict(X_val)

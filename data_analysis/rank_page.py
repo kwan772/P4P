@@ -8,14 +8,14 @@ import matplotlib.cm as cm
 
 
 cursor = db.cursor()
+symbol = 'gme'
 
 query = f"""
 SELECT parent_author_id, author_id 
-FROM wsb_comments
+FROM comments_for_certain_symbols
 WHERE parent_author_id != "None" 
   AND author_id != "None"
-ORDER BY RAND()
-limit 10000
+  AND symbol = "{symbol}"
 """
 
 cursor.execute(query)
@@ -23,10 +23,10 @@ result = cursor.fetchall()
 num_edges = len(result)
 
 # Create a directed graph
-G = nx.Graph()
+G = nx.DiGraph()
 
 for edge in result:
-    G.add_edge(edge[1],edge[0])
+    G.add_edge(edge[0],edge[1])
 
 # Compute PageRank
 pr = nx.pagerank(G, alpha=0.85)  # alpha is the damping factor
@@ -35,7 +35,43 @@ trustScores = []
 for node, score in pr.items():
     trustScores.append((node,score))
 trustScores.sort(key=lambda x:-x[1])
-print(trustScores)
+
+# Extract the second elements
+second_elements = [t[1] for t in trustScores]
+
+# Find the minimum and maximum values of the second elements
+min_val = min(second_elements)
+max_val = max(second_elements)
+
+# Function to normalize a value
+def normalize(value, min_val, max_val):
+    return (value - min_val) / (max_val - min_val)
+
+# Create a new list of tuples with the second element normalized
+normalized_tuples_list = [(t[0], normalize(t[1], min_val, max_val)) for t in trustScores]
+
+# print(normalized_tuples_list)
+
+cursor = db.cursor()
+
+# SQL query with placeholders
+query = """
+    UPDATE comments_for_certain_symbols
+    SET author_weight = %s
+    WHERE author_id = %s AND symbol = %s
+"""
+
+# Prepare the list of tuples
+data_to_update = [(row[1], row[0], symbol) for row in normalized_tuples_list]
+
+# Use executemany to update data
+cursor.executemany(query, data_to_update)
+
+# Commit the changes
+db.commit()
+
+print(f"{cursor.rowcount} rows updated.")
+# print(trustScores)
 
 # # Print PageRank scores
 # for node, score in pr.items():

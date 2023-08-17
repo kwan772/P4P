@@ -11,7 +11,7 @@ from sklearn.metrics import mean_squared_error
 import datetime
 
 # Fetch data for Tesla over a specific period (e.g., the past 5 years)
-tesla = "TSLA"
+tesla = "GME"
 start_date = "2020-01-01"
 end_date = "2023-01-01"
 df = yf.download(tesla, start=start_date, end=end_date)
@@ -45,7 +45,7 @@ log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 tensorboard_callback = TensorBoard(log_dir=log_dir, histogram_freq=1)
 
 # Train the model
-model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_val, y_val), callbacks=[tensorboard_callback])
+model.fit(X_train, y_train, epochs=100, batch_size=32, validation_data=(X_val, y_val), callbacks=[tensorboard_callback])
 
 # Make predictions
 predicted_prices = model.predict(X_val)
