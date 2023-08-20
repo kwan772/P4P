@@ -22,7 +22,7 @@ SELECT
 COUNT(*) AS total_comments,
 (SUM(CASE WHEN sentiment = 'positive' THEN 1 ELSE 0 END) * author_weight) AS positive_sentiment_ratio,
 (SUM(CASE WHEN sentiment = 'negative' THEN 1 ELSE 0 END) * author_weight) AS negative_sentiment_ratio,
-date(from_unixtime(created_utc)) d FROM p4p.comments_for_certain_symbols where symbol = "gme" group by date(from_unixtime(created_utc));
+date(from_unixtime(created_utc)) d FROM p4p.comments_for_certain_symbols where symbol = "tsla" group by date(from_unixtime(created_utc));
 """
 
 sentiment_df = None
@@ -34,12 +34,12 @@ with engine.connect() as conn:
 
 sentiment_df.set_index("d", inplace=True)
 sentiment_df.index = pd.to_datetime(sentiment_df.index)
-sentiment_df.index = sentiment_df.index + pd.DateOffset(days=1)
+# sentiment_df.index = sentiment_df.index + pd.DateOffset(days=1)
 sentiment_df = sentiment_df.sort_index()[start_date:end_date]
 
 # print(sentiment_df)
 
-tesla = "GME"
+tesla = "TSLA"
 
 # Fetch data
 df = yf.download(tesla, start=start_date, end=end_date)
@@ -70,21 +70,19 @@ num_feature = 7
 
 # Prepare data in sequences
 X, y = [], []
-for i in range(60, len(scaled_data)):
-    X.append(scaled_data[i-60:i])
+for i in range(1, len(scaled_data)):
+    X.append(scaled_data[i-1])
     y.append(scaled_data[i, 3])  # Assuming 'Close' price is the target
 
 X, y = np.array(X), np.array(y)
-X = np.reshape(X, (X.shape[0], X.shape[1], num_feature))  # Updated to consider 5 features
 # Split data
 X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, shuffle=False)
 
 # Define the LSTM model
 model = Sequential()
-model.add(LSTM(units=50, input_shape=(X_train.shape[1], num_feature)))
+model.add(Dense(units=50, activation="relu"))
+model.add(Dense(units=50, activation="relu"))
 model.add(Dense(units=20, activation="relu"))
-model.add(Dense(units=5, activation="relu"))
-# model.add(Dense(units=20, activation="relu"))
 model.add(Dense(units=1))
 
 model.compile(optimizer='adam', loss='mean_squared_error')
@@ -121,6 +119,3 @@ print(f"Mean Squared Error: {mse}")
 # RMSE
 rmse = np.sqrt(mse)
 print(f"Root Mean Squared Error: {rmse}")
-
-# Save the model
-model.save("tesla_lstm_model_sentiment.keras")
