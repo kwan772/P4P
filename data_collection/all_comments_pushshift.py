@@ -17,4 +17,3 @@ def parse_comments(comments):
 post_id = '10013dm'
 comments = get_comments(post_id)
 parse_comments(comments)
-
